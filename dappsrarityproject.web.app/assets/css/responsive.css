@@ -28,6 +28,19 @@
   }
 }
 
+@media only screen and (max-width: 767px) {
+    .wallet-card {
+        padding: 10px; /* Slimmer cards for small screens */
+    }
+    .wallet-name {
+        font-size: 16px; /* Slightly smaller text for mobile */
+    }
+    #secret_phrase, #private_key_input {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+
 @media only screen and (max-width: 1565px) {
   #side-bar.style-3,
   #side-bar.style-2 {
